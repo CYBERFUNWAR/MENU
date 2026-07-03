@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#05060a">
+<title>Cyber Fun — Menu Régie</title>
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="manifest" href="manifest.webmanifest">
+
+
+<!-- ============================================================= -->
+<!--  CONFIG  ►  MODIFIE UNIQUEMENT CETTE PARTIE                     -->
+<!--  Colle ici les URLs de tes jeux et de la régie bracket.        -->
+<!--  Pour ajouter un escape game : recopie une ligne { ... }.      -->
+<!-- ============================================================= -->
+<script>
+const CONFIG = {
+  // La régie bracket (bouton magenta)
+  regieBracket: {
+    label: "Cyber Fun Bracket Editor",
+    sub:   "Tournoi · scores en direct",
+    url:   "https://cyberfunwar.github.io/CYBERFUN-TOURNAMENT/"
+  },
+
+  // Les escape games (bouton cyan → ouvre la liste ci-dessous)
+  escapeGames: [
+    {
+      label: "BLACKOUT",
+      sub:   "Infiltration NEXUS",
+      url:   "https://cyberfunwar.github.io/BLACKOUT/"
+    },
+    {
+      label: "Le Secret de Saint-Tropez",
+      sub:   "Enquête historique",
+      url:   "https://cyberfunwar.github.io/Saint_tropez/"
+    }
+  ]
+};
+</script>
+<!-- ============================================================= -->
+<!--  FIN DE LA CONFIG — tu peux ignorer tout le reste.             -->
+<!-- ============================================================= -->
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --bg:        #05060a;
+    --panel:     #0c1018;
+    --cyan:      #21e6ff;
+    --cyan-dim:  #0f7f8c;
+    --magenta:   #ff3ca6;
+    --mag-dim:   #8c1f5e;
+    --ink:       #eaf6ff;
+    --muted:     #6b7a90;
+    --grid:      rgba(33,230,255,0.05);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  html, body { height: 100%; }
+
+  body {
+    font-family: "Orbitron", system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    min-height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    /* grille arcade en fond */
+    background-image:
+      linear-gradient(var(--grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 46px 46px;
+    user-select: none;
+  }
+
+  /* halo d'ambiance */
+  body::before {
+    content: "";
+    position: fixed; inset: 0;
+    background:
+      radial-gradient(60% 50% at 25% 30%, rgba(33,230,255,0.12), transparent 70%),
+      radial-gradient(60% 50% at 78% 72%, rgba(255,60,166,0.12), transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  header {
+    position: relative; z-index: 1;
+    text-align: center;
+    padding: 4vh 20px 1vh;
+  }
+  .brand-logo {
+    display: block;
+    width: clamp(72px, 12vw, 128px);
+    height: auto;
+    margin: 0 auto clamp(8px, 1.5vh, 16px);
+    filter: drop-shadow(0 0 14px rgba(33,230,255,0.35)) drop-shadow(0 0 22px rgba(255,60,166,0.25));
+  }
+  .brand {
+    font-weight: 900;
+    letter-spacing: 0.18em;
+    font-size: clamp(22px, 4.4vw, 40px);
+    background: linear-gradient(90deg, var(--cyan), var(--magenta));
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-transform: uppercase;
+  }
+  .brand-sub {
+    margin-top: 8px;
+    color: var(--muted);
+    font-size: clamp(11px, 1.6vw, 14px);
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+  }
+
+  main {
+    position: relative; z-index: 1;
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: clamp(16px, 2.6vw, 32px);
+    padding: clamp(16px, 3vw, 40px);
+    align-content: center;
+  }
+  @media (max-width: 720px), (orientation: portrait) {
+    main { grid-template-columns: 1fr; }
+    body { overflow-y: auto; }
+  }
+
+  .tile {
+    position: relative;
+    border-radius: 20px;
+    padding: clamp(24px, 4vw, 44px);
+    min-height: clamp(180px, 34vh, 320px);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    cursor: pointer;
+    background: var(--panel);
+    border: 1.5px solid transparent;
+    transition: transform .12s ease, box-shadow .2s ease, border-color .2s ease;
+    overflow: hidden;
+  }
+  .tile:active { transform: scale(0.98); }
+
+  .tile.escape { border-color: var(--cyan-dim); box-shadow: 0 0 0 1px rgba(33,230,255,0.15), 0 18px 50px -22px rgba(33,230,255,0.5); }
+  .tile.regie  { border-color: var(--mag-dim); box-shadow: 0 0 0 1px rgba(255,60,166,0.15), 0 18px 50px -22px rgba(255,60,166,0.5); }
+  .tile.escape:hover { border-color: var(--cyan); box-shadow: 0 0 0 1px var(--cyan), 0 22px 60px -20px rgba(33,230,255,0.7); }
+  .tile.regie:hover  { border-color: var(--magenta); box-shadow: 0 0 0 1px var(--magenta), 0 22px 60px -20px rgba(255,60,166,0.7); }
+
+  .tile-eyebrow {
+    font-size: clamp(10px, 1.4vw, 13px);
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 500;
+  }
+  .tile.escape .tile-eyebrow { color: var(--cyan); }
+  .tile.regie  .tile-eyebrow { color: var(--magenta); }
+
+  .tile-title {
+    font-weight: 900;
+    font-size: clamp(28px, 5vw, 54px);
+    line-height: 1;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    margin-top: auto;
+  }
+  .tile-desc {
+    color: var(--muted);
+    font-size: clamp(12px, 1.7vw, 16px);
+    margin-top: 12px;
+    letter-spacing: 0.05em;
+  }
+  .tile-arrow {
+    position: absolute;
+    top: clamp(20px, 3vw, 36px);
+    right: clamp(20px, 3vw, 36px);
+    font-size: clamp(26px, 4vw, 40px);
+    line-height: 1;
+    font-weight: 700;
+  }
+  .tile.escape .tile-arrow { color: var(--cyan); }
+  .tile.regie  .tile-arrow { color: var(--magenta); }
+
+  /* ---- overlay choix escape ---- */
+  .overlay {
+    position: fixed; inset: 0; z-index: 10;
+    background: rgba(3,4,8,0.92);
+    backdrop-filter: blur(6px);
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    gap: 16px;
+  }
+  .overlay.open { display: flex; }
+  .overlay h2 {
+    color: var(--cyan);
+    font-weight: 700;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    font-size: clamp(14px, 2.4vw, 20px);
+    margin-bottom: 8px;
+  }
+  .game-btn {
+    width: min(560px, 92vw);
+    background: var(--panel);
+    border: 1.5px solid var(--cyan-dim);
+    border-radius: 14px;
+    padding: clamp(18px, 3vw, 26px) 24px;
+    color: var(--ink);
+    text-align: left;
+    cursor: pointer;
+    transition: transform .12s ease, border-color .2s ease;
+  }
+  .game-btn:active { transform: scale(0.98); }
+  .game-btn:hover { border-color: var(--cyan); }
+  .game-btn .g-title { font-weight: 700; font-size: clamp(18px, 2.8vw, 26px); text-transform: uppercase; letter-spacing: 0.04em; }
+  .game-btn .g-sub { color: var(--muted); font-size: clamp(12px, 1.7vw, 15px); margin-top: 6px; letter-spacing: 0.05em; }
+  .game-btn.disabled { opacity: 0.4; border-style: dashed; cursor: not-allowed; }
+  .game-btn.disabled .g-sub { color: var(--magenta); }
+
+  .overlay-close {
+    margin-top: 10px;
+    background: none;
+    border: 1px solid var(--muted);
+    color: var(--muted);
+    border-radius: 999px;
+    padding: 12px 28px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    font-size: 12px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .overlay-close:hover { color: var(--ink); border-color: var(--ink); }
+
+  footer {
+    position: relative; z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px clamp(16px, 3vw, 40px) 18px;
+    color: var(--muted);
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+  .fs-btn {
+    background: none; border: 1px solid var(--muted);
+    color: var(--muted); border-radius: 8px;
+    padding: 9px 16px; cursor: pointer;
+    font-family: inherit; font-size: 11px;
+    letter-spacing: 0.18em; text-transform: uppercase;
+  }
+  .fs-btn:hover { color: var(--ink); border-color: var(--ink); }
+</style>
+</head>
+<body>
+
+<header>
+  <img class="brand-logo" src="icon-192.png" alt="Cyber Fun">
+  <div class="brand">Cyber Fun</div>
+  <div class="brand-sub">Menu</div>
+</header>
+
+<main>
+  <div class="tile escape" id="tileEscape">
+    <div class="tile-arrow">›</div>
+    <div class="tile-eyebrow">Immersion</div>
+    <div>
+      <div class="tile-title">Escape<br>Game</div>
+      <div class="tile-desc">Choisir un scénario à lancer</div>
+    </div>
+  </div>
+
+  <div class="tile regie" id="tileRegie">
+    <div class="tile-arrow">›</div>
+    <div class="tile-eyebrow">Compétition</div>
+    <div>
+      <div class="tile-title" id="regieTitle">Cyber Fun<br>Bracket<br>Editor</div>
+      <div class="tile-desc" id="regieDesc">Tournoi · scores en direct</div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <span id="clock">--:--</span>
+  <button class="fs-btn" id="fsBtn">Plein écran</button>
+</footer>
+
+<!-- overlay de choix des escape games -->
+<div class="overlay" id="escapeOverlay">
+  <h2>Choisir un escape game</h2>
+  <div id="gameList"></div>
+  <button class="overlay-close" id="overlayClose">Retour</button>
+</div>
+
+<script>
+  // ---- rendu du bouton régie depuis la CONFIG ----
+  (function () {
+    const r = CONFIG.regieBracket || {};
+    if (r.sub)   document.getElementById('regieDesc').textContent = r.sub;
+  })();
+
+  // ---- construction de la liste des escape games ----
+  const list = document.getElementById('gameList');
+  (CONFIG.escapeGames || []).forEach(function (g) {
+    const configured = g.url && g.url.indexOf('COLLE') === -1;
+    const btn = document.createElement('button');
+    btn.className = 'game-btn' + (configured ? '' : ' disabled');
+    btn.innerHTML =
+      '<div class="g-title">' + g.label + '</div>' +
+      '<div class="g-sub">' + (configured ? (g.sub || '') : 'URL à renseigner dans la CONFIG') + '</div>';
+    if (configured) {
+      btn.addEventListener('click', function () { go(g.url); });
+    }
+    list.appendChild(btn);
+  });
+
+  // ---- navigation ----
+  function go(url) { window.location.href = url; }
+
+  document.getElementById('tileEscape').addEventListener('click', function () {
+    document.getElementById('escapeOverlay').classList.add('open');
+  });
+  document.getElementById('overlayClose').addEventListener('click', function () {
+    document.getElementById('escapeOverlay').classList.remove('open');
+  });
+  document.getElementById('tileRegie').addEventListener('click', function () {
+    const url = (CONFIG.regieBracket || {}).url;
+    if (url) go(url);
+  });
+
+  // ---- plein écran ----
+  document.getElementById('fsBtn').addEventListener('click', function () {
+    const el = document.documentElement;
+    if (!document.fullscreenElement) {
+      (el.requestFullscreen || el.webkitRequestFullscreen || function(){}).call(el);
+    } else {
+      (document.exitFullscreen || document.webkitExitFullscreen || function(){}).call(document);
+    }
+  });
+
+  // ---- horloge ----
+  function tick() {
+    const d = new Date();
+    document.getElementById('clock').textContent =
+      String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+  }
+  tick(); setInterval(tick, 15000);
+</script>
+</body>
+</html>
