@@ -48,7 +48,15 @@ const CONFIG = {
       sub:   "Enquête historique",
       url:   "https://cyberfunwar.github.io/Saint_tropez/"
     }
-  ]
+  ],
+
+  // La régie à distance (bouton ambré, dans l'écran "Choisir un escape game")
+  // Pilotage d'une table en cours depuis le téléphone de l'animateur.
+  regieLive: {
+    label: "Régie à distance",
+    sub:   "régie à distance pour BLACKOUT",
+    url:   "https://cyberfunwar.github.io/BLACKOUT/regie.html"
+  }
 };
 </script>
 <!-- ============================================================= -->
@@ -247,6 +255,20 @@ const CONFIG = {
   .game-btn.disabled { opacity: 0.4; border-style: dashed; cursor: not-allowed; }
   .game-btn.disabled .g-sub { color: var(--magenta); }
 
+  /* bouton régie à distance (ambré) + séparateur */
+  .game-btn.live { border-color: #8c6412; }
+  .game-btn.live:hover { border-color: #ffb020; }
+  .game-btn.live .g-title { color: #ffb020; }
+  .overlay-sep {
+    width: min(560px, 92vw);
+    display: flex; align-items: center; gap: 12px;
+    color: var(--muted); font-size: 11px; letter-spacing: 0.24em;
+    text-transform: uppercase; margin: 4px 0 2px;
+  }
+  .overlay-sep::before, .overlay-sep::after {
+    content: ""; flex: 1; height: 1px; background: rgba(107,122,144,0.3);
+  }
+
   .overlay-close {
     margin-top: 10px;
     background: none;
@@ -355,6 +377,23 @@ const CONFIG = {
     }
     list.appendChild(btn);
   });
+
+  // ---- bouton régie à distance, sous les jeux ----
+  (function () {
+    const v = CONFIG.regieLive || {};
+    if (!v.url) return;
+    const sep = document.createElement('div');
+    sep.className = 'overlay-sep';
+    sep.textContent = 'Animateur';
+    list.appendChild(sep);
+    const btn = document.createElement('button');
+    btn.className = 'game-btn live';
+    btn.innerHTML =
+      '<div class="g-title">' + (v.label || 'Régie à distance') + '</div>' +
+      '<div class="g-sub">' + (v.sub || '') + '</div>';
+    btn.addEventListener('click', function () { go(v.url); });
+    list.appendChild(btn);
+  })();
 
   // ---- navigation ----
   function go(url) { window.location.href = url; }
