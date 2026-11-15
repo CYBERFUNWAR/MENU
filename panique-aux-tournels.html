@@ -1,0 +1,934 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Panique aux Tournels</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,600&family=Space+Mono:wght@700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ciel:#1b8fd1; --ciel-nuit:#0c5b86; --soleil:#f6b53c; --soleil-clair:#ffd680;
+  --herbe:#4bab5c; --tente:#e8663f; --sable:#f4ecd6; --sable-doux:#e8dcb8;
+  --blanc:#fffdf6; --mer:#0e6ea0; --gris:#5c6a72; --rouge:#d8513f; --violet:#7a5ea8;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:'Nunito',system-ui,sans-serif;color:#13303e;
+  background:linear-gradient(180deg,#8fd3f0 0%,#bfe6f5 30%,#f4ecd6 100%) fixed;min-height:100vh;line-height:1.5;}
+.wrap{max-width:820px;margin:0 auto;padding:16px 16px 60px}
+h1,h2,h3,.fred{font-family:'Fredoka',sans-serif;font-weight:700;letter-spacing:.2px}
+.mono{font-family:'Space Mono',monospace}
+.screen{display:none}
+.screen.on{display:block;animation:fade .35s ease}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.hud{position:sticky;top:0;z-index:30;display:flex;gap:8px;align-items:center;flex-wrap:wrap;
+  padding:10px 14px;margin:-16px -16px 14px;background:rgba(12,91,134,.96);backdrop-filter:blur(6px);box-shadow:0 2px 14px rgba(0,0,0,.18)}
+.pill{background:rgba(255,255,255,.16);color:#fff;border-radius:999px;padding:5px 12px;font-weight:800;font-size:14px;display:inline-flex;gap:6px;align-items:center}
+.pill b{font-family:'Space Mono',monospace}
+.pill.urgent{background:var(--rouge);animation:pulse 1s infinite}
+@keyframes pulse{50%{opacity:.6}}
+.grow{flex:1}
+.mute{background:rgba(255,255,255,.16);border:0;color:#fff;border-radius:999px;width:38px;height:34px;font-size:16px;cursor:pointer}
+.card{background:var(--blanc);border-radius:20px;padding:22px;box-shadow:0 10px 34px rgba(14,60,90,.14);border:1px solid #ece2c6}
+.eyebrow{font-family:'Fredoka';text-transform:uppercase;letter-spacing:2px;font-size:12px;color:var(--tente);font-weight:600}
+h1{font-size:clamp(30px,7vw,46px);color:var(--ciel-nuit);line-height:1.02}
+h2{font-size:clamp(22px,5vw,30px);color:var(--ciel-nuit)}
+.serif-it{font-style:italic;color:var(--gris)}
+.illus{height:150px;border-radius:16px;overflow:hidden;margin-bottom:14px;background:linear-gradient(160deg,#8fd3f0,#4bab5c);display:flex;align-items:center;justify-content:center}
+.illus svg,.illus img{width:100%;height:100%;object-fit:cover;display:block}
+.lieu-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;margin-bottom:10px}
+.tag{display:inline-block;background:var(--ciel);color:#fff;font-family:'Fredoka';font-size:13px;padding:4px 11px;border-radius:999px;white-space:nowrap}
+.tag.phys{background:var(--tente)}.tag.jeu{background:var(--herbe)}.tag.qr{background:var(--violet)}
+.histoire{background:var(--sable);border-left:5px solid var(--soleil);border-radius:0 12px 12px 0;padding:12px 15px;margin:12px 0;font-size:15.5px}
+.histoire b{color:var(--mer)}
+.enonce{font-size:17px;margin:14px 0 10px;font-weight:600}
+.btn{font-family:'Fredoka';font-weight:600;border:0;border-radius:12px;padding:12px 18px;font-size:16px;cursor:pointer;transition:.12s;display:inline-flex;align-items:center;gap:7px}
+.btn:active{transform:translateY(1px)}
+.btn-or{background:var(--soleil);color:#3a2a00;box-shadow:0 4px 0 #c88f20}
+.btn-or:active{box-shadow:0 1px 0 #c88f20;transform:translateY(3px)}
+.btn-go{background:var(--herbe);color:#fff;box-shadow:0 4px 0 #2f7d3d}
+.btn-go:active{box-shadow:0 1px 0 #2f7d3d;transform:translateY(3px)}
+.btn-ghost{background:#eef2ee;color:#2a3c33;border:1px solid #cdd8cd}
+.btn-ghost:disabled{opacity:.5;cursor:default}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.center{justify-content:center}
+.field label{font-family:'Fredoka';font-size:13px;color:var(--gris);display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:1px}
+input[type=text]{width:100%;font-size:18px;padding:12px 14px;border:2px solid #d8cfb2;border-radius:12px;background:#fffdf7;font-family:'Nunito';font-weight:700}
+input[type=text]:focus{outline:0;border-color:var(--ciel)}
+.ans-row{display:flex;gap:10px;margin-top:8px}
+.ans-row input{flex:1}
+.feedback{margin-top:10px;font-weight:800}
+.feedback.ok{color:var(--herbe)}.feedback.no{color:var(--rouge)}
+.indices{margin-top:16px;background:#f3f7f3;border:1px dashed #bcd2bc;border-radius:12px;padding:12px}
+.indices .lbl{font-family:'Fredoka';font-size:13px;color:var(--herbe);margin-bottom:8px}
+.reveal-box{background:#fff;border-left:4px solid var(--ciel);border-radius:0 8px 8px 0;padding:9px 12px;margin-top:8px;font-size:14.5px}
+.reveal-box.sol{border-left-color:var(--tente)}
+.reveal-box .t{display:block;font-family:'Fredoka';font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--gris);margin-bottom:2px}
+.letter-won{text-align:center;background:linear-gradient(160deg,var(--soleil-clair),var(--soleil));border-radius:16px;padding:16px;margin-top:6px}
+.letter-won .big{font-family:'Fredoka';font-size:54px;color:var(--ciel-nuit);line-height:1}
+.nav-row{display:flex;justify-content:space-between;align-items:center;margin-top:16px}
+.ordre-zone{display:flex;flex-direction:column;gap:9px;margin:12px 0}
+.ordre-item{background:#eef6ff;border:2px solid #bcd7ef;border-radius:12px;padding:12px 14px;cursor:pointer;font-weight:700;display:flex;gap:10px;align-items:center}
+.ordre-item .num{width:26px;height:26px;border-radius:50%;background:#cfe0ef;display:grid;place-items:center;font-family:'Space Mono';font-size:14px;color:var(--mer)}
+.ordre-item.picked{background:var(--herbe);border-color:#2f7d3d;color:#fff}
+.ordre-item.picked .num{background:#fff;color:var(--herbe)}
+.obj-hint{display:flex;gap:12px;align-items:center;background:#f2ecfb;border:1px solid #d9c9f0;border-radius:12px;padding:12px 14px;margin:12px 0}
+.obj-hint .ic{font-size:26px}
+.cipher{font-family:'Space Mono';font-size:clamp(22px,7vw,30px);letter-spacing:.3em;text-align:center;color:var(--tente);margin:12px 0}
+/* Maze */
+.maze-wrap{display:flex;justify-content:center;margin:12px 0}
+.maze{display:grid;gap:1.5px;width:100%;max-width:460px;background:var(--ciel-nuit);padding:5px;border-radius:12px;border:2px solid var(--soleil)}
+.mcell{aspect-ratio:1;border-radius:2px;background:#2f9fd6;display:flex;align-items:center;justify-content:center;font-size:11px;line-height:1}
+.mcell.wall{background:#0c3b55}
+.mcell.fog{background:#082230}
+.mcell.goal::after{content:"🏠";font-size:13px}
+.mcell.boat::after{content:"🚲";font-size:13px}
+.mcell.i0::after{content:"📬";font-size:12px}
+.mcell.i1::after{content:"🧺";font-size:12px}
+.dpad{display:flex;flex-direction:column;align-items:center;gap:6px;margin:8px 0 2px}
+.dpad-mid{display:flex;gap:6px}
+.dbtn{min-width:56px;font-size:18px;padding:9px 12px;touch-action:manipulation}
+/* Accueil */
+.opts{display:flex;gap:12px;margin:14px 0}
+.opt{flex:1;border:2px solid #d8cfb2;border-radius:14px;padding:14px;cursor:pointer;background:#fffdf7;text-align:center}
+.opt.sel{border-color:var(--ciel);background:#eaf6fe;box-shadow:0 0 0 3px rgba(27,143,209,.15)}
+.opt .t{font-family:'Fredoka';font-size:18px}
+.opt .d{font-size:13px;color:var(--gris);margin-top:4px}
+.tabs{display:flex;gap:8px;margin:10px 0}
+.tab{padding:6px 13px;border-radius:999px;background:#eef2ee;cursor:pointer;font-family:'Fredoka';font-size:14px}
+.tab.sel{background:var(--ciel);color:#fff}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{padding:7px 8px;text-align:left}
+thead th{background:var(--ciel-nuit);color:#fff;font-family:'Fredoka';font-weight:600}
+tbody tr:nth-child(even){background:#f6f1e1}
+.medal{font-family:'Space Mono'}
+.empty{text-align:center;color:var(--gris);padding:20px;font-style:italic}
+details{background:#f6f1e1;border:1px solid #e2d6b4;border-radius:12px;padding:4px 14px;margin:8px 0}
+summary{font-family:'Fredoka';font-size:16px;cursor:pointer;padding:8px 0;color:var(--ciel-nuit)}
+.paper{background:#fff;border:1px dashed #c9b990;border-radius:10px;padding:12px;margin:8px 0}
+.paper h4{font-family:'Fredoka';color:var(--tente);margin-bottom:6px}
+.gm-code{font-family:'Space Mono';color:var(--rouge);font-weight:700}
+.gm-table td,.gm-table th{border:1px solid #e2d6b4;font-size:13px}
+.step-note{font-size:13px;color:var(--gris)}
+.back{color:var(--ciel);cursor:pointer;font-family:'Fredoka';font-size:14px}
+.foot{font-size:13px;color:var(--gris);margin-top:14px}
+.checklist{list-style:none;font-size:14.5px}
+.checklist li{padding:4px 0 4px 26px;position:relative}
+.checklist li::before{content:"☐";position:absolute;left:0;color:var(--herbe);font-size:18px}
+.confetti{position:fixed;inset:0;pointer-events:none;z-index:50;overflow:hidden}
+.confetti.on .cf{position:absolute;top:-10px;width:9px;height:14px;opacity:.9;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(105vh) rotate(540deg)}}
+@media(max-width:520px){.card{padding:17px}.opts{flex-direction:column}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="hud" id="hud">
+  <span class="pill" id="timerPill">⏳ <b id="timer">30:00</b></span>
+  <span class="pill">💡 <b id="hintCount">0</b></span>
+  <span class="pill" id="stepPill">Épreuve 1/8</span>
+  <span class="grow"></span>
+  <button class="mute" id="muteBtn" title="Son" onclick="toggleMute()">🔊</button>
+</div>
+
+<!-- ACCUEIL -->
+<section class="screen on" id="s-accueil">
+  <div class="card">
+    <div class="eyebrow">Cyber Fun · Escape game sur-mesure</div>
+    <h1>Panique aux <span style="color:var(--tente)">Tournels</span></h1>
+    <p class="serif-it" style="margin:6px 0 12px">Votre journée d'essai au camping</p>
+    <div class="illus" id="heroIllus"></div>
+    <p style="font-size:16px">
+      Bienvenue dans l'équipe ! Avant de signer votre contrat de saisonnier, le directeur vous met à l'épreuve :
+      revivez les <b>mésaventures les plus légendaires</b> du camping, celles que toute la <b>Radio Tournels</b> (nos 220 saisonniers)
+      se raconte encore. Chaque incident réglé vous rapporte une <b>lettre</b>. Reconstituez le mot secret, et le contrat
+      (et la récompense) vous attend dans le coffre.
+      <br><br>⚠️ <b>Gardez votre feuille à portée de main :</b> chaque lettre gagnée est à noter aussitôt — elle ne reste pas affichée !
+    </p>
+    <div class="field" style="margin-top:14px">
+      <label>Nom de votre équipe</label>
+      <input type="text" id="pseudo" maxlength="28" placeholder="Ex. Les Saisonniers du soleil">
+    </div>
+    <p class="eyebrow" style="margin-top:14px">Niveau</p>
+    <div class="opts" id="modeOpts">
+      <div class="opt sel" data-mode="famille"><div class="t">👪 Famille</div><div class="d">Corsé mais accessible, tous les indices.</div></div>
+      <div class="opt" data-mode="expert"><div class="t">🧭 Expert</div><div class="d">Pour les durs : un seul indice, pas de solution.</div></div>
+    </div>
+    <div class="row center" style="margin-top:16px">
+      <button class="btn btn-or" id="startBtn">Démarrer les 30 minutes</button>
+      <button class="btn btn-ghost" onclick="go('classement')">🏆 Classement</button>
+    </div>
+    <div class="row center" style="margin-top:8px">
+      <button class="btn btn-ghost" style="font-size:14px" onclick="go('animateur')">🔑 Espace animateur</button>
+    </div>
+    <p class="foot" style="text-align:center">Conçu pour Cyber Fun · à compléter avec cadenas, boîtes, QR & fiches imprimées.</p>
+  </div>
+</section>
+
+<section class="screen" id="s-jeu"><div class="card" id="stepCard"></div></section>
+
+<section class="screen" id="s-finale">
+  <div class="card">
+    <div class="illus" id="finaleIllus"></div>
+    <div class="eyebrow">Dernière étape · La signature</div>
+    <h2>Le mot de passe du directeur</h2>
+    <p class="histoire" style="text-align:left">
+      Bravo, vous avez survécu à la journée d'essai ! Vous avez réuni les <b>8 lettres</b> glanées en chemin.
+      Reconstituez le mot et tapez-le pour décrocher votre place dans l'équipe des Tournels.
+    </p>
+    <div class="field"><label>Le mot secret (8 lettres)</label>
+      <div class="ans-row"><input type="text" id="finalInput" maxlength="8" placeholder="• • • • • • • •"><button class="btn btn-go" id="finalBtn">Valider</button></div>
+    </div>
+    <p class="feedback" id="finalFeedback"></p>
+  </div>
+</section>
+
+<section class="screen" id="s-resultat">
+  <div class="card" style="text-align:center">
+    <div style="font-size:60px">🏕️🎉</div>
+    <h1 style="color:var(--herbe)">Embauchés !</h1>
+    <p class="serif-it">Bienvenue dans l'équipe des Tournels.</p>
+    <div class="row center" style="margin:14px 0">
+      <div><div class="fred" style="font-size:34px;color:var(--mer)" id="resTime">–</div><div class="eyebrow">Temps</div></div>
+      <div style="width:28px"></div>
+      <div><div class="fred" style="font-size:34px;color:var(--tente)" id="resScore">–</div><div class="eyebrow">Score</div></div>
+    </div>
+    <p id="rankBanner" style="font-size:17px"></p>
+    <div id="treasureNote" style="display:none;margin:14px 0;padding:14px;border-radius:14px;background:rgba(246,181,60,.16);border:1.5px solid var(--soleil)">
+      <div style="font-size:30px">🧰🎁</div>
+      <p style="margin:6px 0 0"><b>Votre contrat et votre récompense vous attendent !</b><br>Ouvrez le <b>coffre final</b> avec le <b>code à 4 chiffres</b> découvert dans le cryptex (l'erreur de réservation).</p>
+    </div>
+    <p class="foot" id="scoreBreak"></p>
+    <div class="row center" style="margin-top:12px">
+      <button class="btn btn-or" onclick="go('classement')">Voir le classement</button>
+      <button class="btn btn-ghost" onclick="resetToHome()">Rejouer</button>
+    </div>
+  </div>
+</section>
+
+<section class="screen" id="s-timeout">
+  <div class="card" style="text-align:center">
+    <div style="font-size:56px">⏰</div>
+    <h1 style="color:var(--rouge)">Les 30 minutes sont écoulées !</h1>
+    <p>La journée d'essai est terminée… mais ce n'est que partie remise. Rien n'est enregistré au classement cette fois.</p>
+    <div class="row center" style="margin-top:14px"><button class="btn btn-or" onclick="resetToHome()">Réessayer</button></div>
+  </div>
+</section>
+
+<section class="screen" id="s-classement">
+  <div class="card">
+    <div class="lieu-head"><h2>🏆 Classement</h2><span class="back" onclick="go('accueil')">← Accueil</span></div>
+    <p style="font-size:14px;color:var(--gris);margin-bottom:4px">Classé au <b style="color:var(--tente)">score</b> : plus on est rapide et autonome, plus on monte.</p>
+    <p id="lbStatus" class="mono" style="font-size:12.5px;color:var(--herbe);margin-bottom:10px"></p>
+    <div class="tabs" id="lbTabs">
+      <span class="tab sel" data-f="tous">Tous</span><span class="tab" data-f="famille">👪 Famille</span><span class="tab" data-f="expert">🧭 Expert</span>
+    </div>
+    <div id="lbBody"></div>
+    <div class="foot">La réinitialisation se fait depuis l'espace <b>animateur</b>.</div>
+  </div>
+</section>
+
+<section class="screen" id="s-animateur">
+  <div class="card">
+    <div class="lieu-head"><h2>🔑 Espace animateur</h2><span class="back" onclick="go('accueil')">← Accueil</span></div>
+    <div id="gmGate">
+      <p>Entrez le mot de passe maître du jeu :</p>
+      <div class="ans-row" style="margin-top:8px"><input type="text" id="gmPass" placeholder="mot de passe"><button class="btn btn-go" id="gmEnter">Entrer</button></div>
+      <p class="feedback" id="gmFb"></p>
+    </div>
+    <div id="gmContent" style="display:none">
+      <p style="margin:8px 0">Mot secret final : <span class="gm-code" id="gmWord" style="font-size:22px"></span></p>
+
+      <details open><summary>🔑 1. Cadenas à clé (épreuve O)</summary>
+        <p style="margin:8px 0">Posez un trousseau de clés <b>en vrac</b> ; une seule ouvre la boîte (les joueurs tâtonnent). Dedans, la carte :</p>
+        <div class="paper"><h4>✦ Carte dans la boîte à clé ✦</h4><p>Recopiez ce mot :</p><p class="gm-code" style="font-size:26px" id="gmCle"></p></div>
+      </details>
+
+      <details open><summary>🔢 2. Cadenas 4 chiffres (épreuve U)</summary>
+        <p style="margin:8px 0">Réglez le cadenas sur <span class="gm-code" id="gmChiffres" style="font-size:22px"></span> (le max de la plaque, ×4). Dedans, la carte :</p>
+        <div class="paper"><h4>✦ Carte dans la boîte 4 chiffres ✦</h4><p>Recopiez ce mot (clin d'œil belge) :</p><p class="gm-code" style="font-size:24px" id="gmFrites"></p></div>
+      </details>
+
+      <details open><summary>📱 3. QR code (épreuve R)</summary>
+        <p style="margin:8px 0">Imprimez le QR (fiche MJ) et cachez-le près des douches. Scanné, il révèle une charade.</p>
+        <p class="step-note">Contenu encodé : <span class="gm-code" id="gmQRtext"></span></p>
+      </details>
+
+      <details open><summary>📻 4. Morse Radio Tournels (défi bonus)</summary>
+        <p style="margin:8px 0">L'appli <b>joue le message en bips</b>. Les joueurs décodent avec la <b>grille morse imprimée</b> (fiche MJ).</p>
+        <p>Le message épelle : <span class="gm-code" id="gmMorse" style="font-size:20px"></span></p>
+      </details>
+
+      <details open><summary>📒 5. Registre des réservations + boîte-livre (défi bonus)</summary>
+        <p style="margin:8px 0">Imprimez ce registre et donnez-le aux joueurs. Ils cherchent la ligne <b>DUBOIS · 12-19 juillet</b> → emplacement <span class="gm-code" id="gmRegAns"></span>. Ce nombre est le <b>code de la boîte-livre (3 chiffres)</b> : réglez-la dessus et glissez-y la carte chiffrée ci-dessous.</p>
+        <div class="paper"><h4>✦ Carte à mettre dans la boîte-livre ✦</h4>
+          <p>Message de Radio Tournels — décalez chaque lettre de <b>3 rangs en arrière</b> (D→A) :</p>
+          <p class="gm-code" style="font-size:26px;letter-spacing:.25em" id="gmBookCipher"></p>
+          <p class="step-note">Mot obtenu (à taper) : <span class="gm-code" id="gmBookWord"></span></p></div>
+        <table class="gm-table"><thead><tr><th>Nom</th><th>Semaine</th><th>Emplacement</th></tr></thead><tbody>
+          <tr><td>MARTIN</td><td>5 – 12 juillet</td><td>112</td></tr>
+          <tr><td>DUBOIS</td><td>5 – 12 juin</td><td>045</td></tr>
+          <tr><td>LEROY</td><td>19 – 26 juillet</td><td>221</td></tr>
+          <tr><td><b>DUBOIS</b></td><td><b>12 – 19 juillet</b></td><td><b>308</b></td></tr>
+          <tr><td>PETIT</td><td>12 – 19 juillet</td><td>194</td></tr>
+          <tr><td>BERNARD</td><td>12 – 19 août</td><td>377</td></tr>
+        </tbody></table>
+      </details>
+
+      <details open><summary>🔄 6. Cryptex (épreuve L)</summary>
+        <p style="margin:8px 0">Réglez le cryptex (6 lettres) sur <span class="gm-code" id="gmCryptex" style="font-size:22px"></span>. Dedans, la carte du code du coffre final :</p>
+        <div class="paper"><h4>✦ Carte dans le cryptex ✦</h4><p>Code du coffre final — à garder pour la fin :</p><p class="gm-code" style="font-size:30px;letter-spacing:.2em" id="gmTreasure"></p></div>
+      </details>
+
+      <details open><summary>🔤 7. Cadenas 5 lettres (épreuve S)</summary>
+        <p style="margin:8px 0">Réglez le cadenas 5 lettres sur <span class="gm-code" id="gmLettres" style="font-size:22px"></span>. Dedans, un petit lot (crème solaire gag).</p>
+      </details>
+
+      <details open><summary>🧰 8. Coffre final (récompense)</summary>
+        <p style="margin:8px 0">Réglez le coffre final sur <span class="gm-code" id="gmTreasure2" style="font-size:22px"></span> et placez-y le <b>contrat + la récompense</b>. Ouvert à la fin, une fois TOURNELS trouvé.</p>
+      </details>
+
+      <details><summary>📜 9. Toutes les solutions</summary>
+        <table class="gm-table"><thead><tr><th>Épreuve</th><th>Type</th><th>Réponse</th><th>Lettre</th></tr></thead><tbody id="gmRows"></tbody></table>
+        <p class="step-note" style="margin-top:8px">F = Famille / E = Expert. Les défis bonus (morse, registre, labyrinthe) ne donnent pas de lettre.</p>
+      </details>
+
+      <details><summary>🖨️ 10. Matériel</summary>
+        <ul class="checklist">
+          <li>1 tablette / PC par équipe (ce fichier).</li>
+          <li>1 <b>cadenas à clé</b> + un trousseau de clés en vrac, une seule ouvre (carte « <span id="gmCle2"></span> » dedans).</li>
+          <li>1 <b>cadenas 4 chiffres</b> réglé sur <span id="gmChiffres2"></span> (carte « <span id="gmFrites2"></span> » dedans).</li>
+          <li>1 <b>cryptex 6 lettres</b> réglé sur <span id="gmCryptex2"></span> (carte du code dedans).</li>
+          <li>1 <b>cadenas 5 lettres</b> réglé sur <span id="gmLettres2"></span>.</li>
+          <li>1 <b>coffre final</b> réglé sur <span id="gmTreasure3"></span> (contrat + récompense).</li>
+          <li>1 <b>boîte-livre 3 chiffres</b> réglée sur <span id="gmBook2"></span> (carte « <span id="gmBookCipher2"></span> » dedans).</li>
+          <li>1 <b>QR imprimé</b> (douches) + la <b>grille morse</b> imprimée + le <b>registre des réservations</b> imprimé.</li>
+          <li>Feuille + crayon par équipe.</li>
+        </ul>
+        <p style="margin-top:10px"><a href="#" class="back" onclick="clearLeaderboard();return false;">↺ Réinitialiser le classement</a></p>
+      </details>
+    </div>
+  </div>
+</section>
+
+</div>
+<div class="confetti" id="confetti"></div>
+
+<script>
+/* ============================================================
+   PANIQUE AUX TOURNELS — moteur (Cyber Fun)
+============================================================ */
+const SECRET = "TOURNELS";
+const DURATION = 30*60;
+const GM_PASSWORD = "Jepense83";
+
+/* Objets & réponses (modifiables) */
+const CLE_INSIDE     = "MANITOU";   // mot dans la boîte à clé (épreuve O)
+const CHIFFRES_CODE  = "5555";      // code cadenas 4 chiffres (épreuve U)
+const CHIFFRES_INSIDE= "FRITES";    // mot dans la boîte 4 chiffres (épreuve U)
+const QR_ANSWER      = "MITIGEUR";  // réponse énigme QR (épreuve R)
+const QR_ENIGME      = "ENIGME DES TOURNELS. Monsieur se met SOUS le pommeau et jure que l'eau ne coule pas. Normal : il faut tourner la poignee unique qui regle le chaud et le froid ! Comment appelle-t-on cette poignee ? (8 lettres) Tapez ce mot sur l'ordinateur.";
+const CRYPTEX_WORD   = "SEJOUR";    // mot du cryptex (épreuve L)
+const TREASURE_CODE  = "1407";      // code coffre final (dans le cryptex)
+const LETTRES_WORD   = "CREME";     // mot cadenas 5 lettres (épreuve S)
+const MORSE_WORD     = "RUMEUR";    // mot épelé en morse (bonus Radio Tournels)
+const REGISTRE_ANS   = "308";       // emplacement correct = CODE de la boîte-livre (3 chiffres)
+const BOOK_CIPHER    = "SRWLQV";    // texte chiffré sur la carte dans la boîte-livre (César +3)
+const BOOK_WORD      = "POTINS";    // mot déchiffré à saisir (décalage −3)
+
+const FIREBASE = { apiKey:"", authDomain:"", projectId:"", appId:"", collection:"classement_panique_tournels" };
+window.FIREBASE = FIREBASE;
+
+/* ====== IMAGES & SON PERSO ======
+   Déposez vos fichiers À CÔTÉ du .html (mêmes noms, sans dossier).
+   Un fichier manquant => le dessin d'origine s'affiche automatiquement. */
+const MEDIA = {
+  musique: "",                 // ex: "ambiance.mp3"  (laisser "" = pas de musique)
+  images: {
+    hero:        "accueil.jpg",      // écran d'accueil
+    peage:       "peage.jpg",        // épreuve 1 — le péage
+    cle:         "cle.jpg",          // épreuve 2 — l'antivol / les clés
+    patate:      "patates.jpg",      // épreuve 3 — les pommes de terre
+    douche:      "douche.jpg",       // épreuve 4 — la douche
+    radio:       "radio.jpg",        // bonus — Radio Tournels (morse)
+    caravane:    "caravane.jpg",     // épreuve 5 — l'installation
+    registre:    "registre.jpg",     // bonus — le registre
+    femme:       "femme.jpg",        // épreuve 6 — la femme oubliée
+    reservation: "reservation.jpg",  // épreuve 7 — la réservation (cryptex)
+    tournee:     "tournee.jpg",      // bonus — la tournée (labyrinthe)
+    soleil:      "soleil.jpg",       // épreuve 8 — le coup de soleil
+    tournels:    "final.jpg"         // écran final
+  }
+};
+
+const SCORING = { famille:{base:5500,perSec:0.9,indice:65,solution:180},
+                  expert:{base:7000,perSec:1.3,indice:110,solution:280} };
+const MAZE_BUDGET = { famille:2.3, expert:1.8 };
+
+/* ---------- ART ---------- */
+function svg(bg,c){return `<svg viewBox="0 0 400 200" xmlns="http://www.w3.org/2000/svg">${bg}${c}</svg>`;}
+const SKY=`<rect width="400" height="200" fill="#8fd3f0"/><circle cx="330" cy="46" r="26" fill="#f6b53c"/>`;
+const GROUND=`<rect y="150" width="400" height="50" fill="#4bab5c"/>`;
+const ART={
+  hero:svg(SKY+GROUND,`<polygon points="110,150 160,80 210,150" fill="#e8663f"/><polygon points="150,150 160,80 170,150" fill="#fffdf6"/><rect x="235" y="120" width="60" height="30" rx="4" fill="#fff"/><rect x="243" y="120" width="44" height="12" fill="#e8663f"/><circle cx="248" cy="150" r="8" fill="#333"/><circle cx="282" cy="150" r="8" fill="#333"/>`),
+  peage:svg(SKY+GROUND,`<rect x="60" y="60" width="16" height="90" fill="#777"/><rect x="324" y="60" width="16" height="90" fill="#777"/><rect x="60" y="56" width="280" height="16" fill="#e8663f"/><rect x="235" y="118" width="60" height="32" rx="4" fill="#fff"/><rect x="200" y="124" width="44" height="26" rx="3" fill="#1b8fd1"/>`),
+  cle:svg(SKY+GROUND,`<circle cx="170" cy="100" r="26" fill="none" stroke="#f6b53c" stroke-width="10"/><rect x="190" y="95" width="80" height="10" fill="#f6b53c"/><rect x="255" y="105" width="10" height="16" fill="#f6b53c"/><rect x="235" y="105" width="8" height="12" fill="#f6b53c"/>`),
+  patate:svg(SKY+GROUND,`<rect x="150" y="110" width="100" height="40" rx="6" fill="#333"/><circle cx="175" cy="130" r="10" fill="#e8663f"/><circle cx="225" cy="130" r="10" fill="#555"/><ellipse cx="200" cy="95" rx="22" ry="16" fill="#c99a5b"/>`),
+  douche:svg(SKY+GROUND,`<rect x="180" y="60" width="12" height="40" fill="#999"/><rect x="155" y="52" width="62" height="12" rx="4" fill="#bbb"/><g stroke="#1b8fd1" stroke-width="3"><line x1="165" y1="66" x2="162" y2="120"/><line x1="186" y1="66" x2="186" y2="120"/><line x1="207" y1="66" x2="210" y2="120"/></g>`),
+  radio:svg(SKY+GROUND,`<rect x="140" y="95" width="120" height="55" rx="8" fill="#333"/><circle cx="165" cy="122" r="13" fill="#f6b53c"/><rect x="190" y="110" width="58" height="8" fill="#888"/><rect x="190" y="124" width="58" height="8" fill="#888"/><line x1="250" y1="95" x2="275" y2="60" stroke="#333" stroke-width="3"/><circle cx="275" cy="58" r="4" fill="#e8663f"/>`),
+  caravane:svg(SKY+GROUND,`<rect x="120" y="100" width="160" height="50" rx="10" fill="#fff" stroke="#e8663f" stroke-width="3"/><rect x="135" y="112" width="40" height="26" fill="#8fd3f0"/><circle cx="160" cy="150" r="12" fill="#333"/><circle cx="250" cy="150" r="12" fill="#333"/><rect x="195" y="150" width="6" height="16" fill="#777"/>`),
+  registre:svg(SKY+GROUND,`<rect x="140" y="70" width="120" height="82" rx="6" fill="#fff" stroke="#c9b990" stroke-width="2"/><g stroke="#ddd"><line x1="140" y1="90" x2="260" y2="90"/><line x1="140" y1="108" x2="260" y2="108"/><line x1="140" y1="126" x2="260" y2="126"/></g><rect x="148" y="96" width="60" height="8" fill="#bcd"/><rect x="148" y="114" width="60" height="8" fill="#f6b53c"/><rect x="148" y="132" width="60" height="8" fill="#bcd"/>`),
+  femme:svg(SKY+GROUND,`<rect x="140" y="110" width="120" height="40" rx="12" fill="#1b8fd1"/><circle cx="165" cy="150" r="12" fill="#333"/><circle cx="240" cy="150" r="12" fill="#333"/><circle cx="175" cy="100" r="12" fill="#f6b53c"/><text x="235" y="104" font-size="26">👜</text>`),
+  reservation:svg(SKY+GROUND,`<rect x="140" y="70" width="120" height="80" rx="8" fill="#fff" stroke="#c9b990" stroke-width="2"/><g stroke="#ddd"><line x1="140" y1="92" x2="260" y2="92"/></g><rect x="150" y="80" width="40" height="8" fill="#e8663f"/><g fill="#bcd"><rect x="150" y="100" width="14" height="14"/><rect x="170" y="100" width="14" height="14"/><rect x="190" y="100" width="14" height="14" fill="#f6b53c"/></g>`),
+  tournee:svg(SKY+GROUND,`<circle cx="160" cy="130" r="18" fill="none" stroke="#333" stroke-width="4"/><circle cx="240" cy="130" r="18" fill="none" stroke="#333" stroke-width="4"/><line x1="160" y1="130" x2="200" y2="100" stroke="#333" stroke-width="4"/><line x1="200" y1="100" x2="240" y2="130" stroke="#333" stroke-width="4"/><rect x="195" y="92" width="18" height="14" fill="#e8663f"/>`),
+  soleil:svg(`<rect width="400" height="200" fill="#ffd680"/>`+GROUND,`<circle cx="200" cy="80" r="34" fill="#e8663f"/><g stroke="#e8663f" stroke-width="5"><line x1="200" y1="20" x2="200" y2="36"/><line x1="200" y1="124" x2="200" y2="140"/><line x1="140" y1="80" x2="156" y2="80"/><line x1="244" y1="80" x2="260" y2="80"/></g>`),
+  tournels:svg(SKY+GROUND,`<polygon points="90,150 140,78 190,150" fill="#e8663f"/><polygon points="210,150 260,78 310,150" fill="#4bab5c"/><text x="200" y="120" font-size="30" text-anchor="middle">🏕️</text>`)
+};
+function artHtml(k){
+  const url = MEDIA.images && MEDIA.images[k];
+  if(url) return `<img src="${url}" alt="" loading="lazy" onerror="artFallback(this,'${k}')">`;
+  return ART[k]||"";
+}
+function artFallback(img,key){ if(img && img.parentElement) img.parentElement.innerHTML = ART[key]||""; }
+
+/* ---------- ÉTAPES ---------- */
+const STEPS = [
+  { type:"enigme", letter:"T", art:"peage", lieu:"Le portique du péage", titre:"Attention, ça dépasse !",
+    histoire:"Tout commence par un jeune couple belge, en vacances pour un mois de juillet dans la caravane prêtée par le beau-père. Sur l'autoroute, euphoriques, ils avaient complètement <b>oublié qu'ils tiraient une caravane</b>… jusqu'au <b>portique de gabarit</b> de l'avant-dernier péage, à Aix-en-Provence : BANG ! Premier exploit avant même d'être arrivés.",
+    f:{ enonce:"La voiture mesure <b>1,55 m</b> de haut. Posée sur sa remorque, la caravane ajoute <b>1,58 m</b> par-dessus. Le portique du péage tolère <b>3,00 m</b>. De combien de <b>centimètres</b> l'attelage dépasse-t-il ?",
+        reponses:["13","13CM"],
+        indices:["Hauteur totale = 1,55 m + 1,58 m = 3,13 m, soit 313 cm.","313 cm − 300 cm = ?"],
+        solution:"1,55 + 1,58 = 3,13 m, donc 313 − 300 = 13 cm." },
+    e:{ enonce:"La caravane fait <b>2,52 m</b>, posée sur une remorque de <b>0,61 m</b>, surmontée d'une galerie de toit de <b>0,12 m</b>. Le portique tolère <b>3,00 m</b>. De combien de <b>centimètres</b> l'ensemble dépasse-t-il ?",
+        reponses:["25","25CM"],
+        indices:["Total = 2,52 + 0,61 + 0,12 = 3,25 m.","325 − 300 = ?"],
+        solution:"2,52 + 0,61 + 0,12 = 3,25 m, soit 25 cm de dépassement." } },
+
+  { type:"cle", letter:"O", art:"cle", lieu:"L'antivol de la caravane", titre:"La bonne clé",
+    histoire:"Arrivés au camping, on leur propose de monter la caravane à l'emplacement au <b>manitou</b>. On leur demande juste de retirer l'antivol… On revient 10 minutes plus tard : la caravane est toujours attelée, et le Belge nous tend une <b>clé cassée</b> ! Il s'était acharné avec la mauvaise. Et par miracle, la <b>bonne clé</b> pendait là, sur le même trousseau, depuis le début.",
+    riddle:"Un trousseau de clés <b>en vrac</b> est posé devant vous : <b>une seule</b> ouvre l'antivol (la boîte). Comme notre Belge, essayez-les une par une… mais sans forcer (souvenez-vous de la clé cassée !). Ouvrez la boîte et recopiez le <b>mot</b> inscrit sur la carte à l'intérieur.",
+    reponses:[CLE_INSIDE],
+    indices:["Procédez par élimination : écartez chaque clé qui n'entre pas ou ne tourne pas sans forcer.","Une fois la bonne clé trouvée, ouvrez la boîte et recopiez le mot de la carte."],
+    solution:"Une seule clé du trousseau ouvre la boîte ; le mot caché à l'intérieur est à saisir." },
+
+  { type:"chiffres", letter:"U", art:"patate", lieu:"Les pommes de terre récalcitrantes", titre:"Monté sur « 1 » !",
+    histoire:"Un client débarque à la réception, furieux : <b>5 heures</b> que ses pommes de terre cuisent et toujours rien ! On monte au mobil-home : la plaque était réglée sur <b>1</b> (le minimum) au lieu du <b>maximum</b>. Et sa défense restée célèbre : « <i>En Belgique, le 5 est à l'opposé !</i> » Il n'avait tout simplement pas regardé les chiffres.",
+    riddle:"Sur cette plaque, le maximum est le <b>5</b>. Réglez le cadenas à 4 chiffres sur ce bon réglage <b>répété 4 fois</b>, ouvrez la boîte, et recopiez le mot inscrit sur la carte (un clin d'œil belge !).",
+    reponses:[CHIFFRES_INSIDE],
+    indices:["Le bon réglage (le maximum de la plaque) est 5 → code 5 5 5 5.","Ouvrez la boîte avec 5555 et recopiez le mot de la carte."],
+    solution:"Code 5555 (le max ×4) ; la carte dans la boîte porte le mot à saisir." },
+
+  { type:"qr", letter:"R", art:"douche", lieu:"La douche mystérieuse", titre:"Pas d'eau… ou presque",
+    histoire:"Appel d'un cottage : « plus d'eau à la douche ! » Sur place, l'épouse lave pourtant tranquillement des légumes à l'évier. Le mari, lui, se met carrément <b>sous le pommeau</b> pour prouver que ça ne coule pas… jusqu'à ce qu'on ouvre le <b>mitigeur</b> ! Sa réplique, sincèrement étonnée : « <i>Ah bon, ce n'est pas automatique quand on se met dessous ?</i> »",
+    reponses:[QR_ANSWER],
+    indices:["Scannez le QR caché près des douches : il contient la charade.","La poignée unique qui règle chaud et froid d'un seul geste s'appelle un… MITIGEUR."],
+    solution:"Le QR mène à MITIGEUR, la poignée de la douche." },
+
+  { type:"morse", bonus:true, letter:"", art:"radio", lieu:"Radio Tournels", titre:"Défi bonus · Message codé",
+    histoire:"Ici, il y a un truc bien à nous : la <b>« Radio Tournels »</b> ! Avec <b>220 saisonniers</b> en été, ça jacasse dans tous les sens, ça déforme… et ça invente pas mal. Un saisonnier facétieux a même transmis un message en <b>morse</b> sur les talkies. <b>Défi bonus</b> : décodez-le (pas de lettre à gagner, juste l'honneur de la radio !).",
+    word:MORSE_WORD,
+    reponses:[MORSE_WORD],
+    indices:["Lancez le message et décodez-le avec la grille morse imprimée (un point court, un trait long).","La première lettre « · — · » est un R. Le message épelle ce que Radio Tournels adore colporter."],
+    solution:"Le morse épelle RUMEUR — la spécialité maison !" },
+
+  { type:"ordre", letter:"N", art:"caravane", lieu:"L'installation de la caravane", titre:"Dans le bon ordre !",
+    histoire:"On installe enfin la caravane sur l'emplacement avec le manitou. Tout le monde est content, on s'apprête à repartir… et là, sous nos yeux, la caravane <b>se soulève</b> et bascule : ils étaient montés dedans sans avoir <b>mis les pieds stabilisateurs</b> ! Fou rire général. Pour éviter la catastrophe, remettez les étapes d'installation dans le bon ordre.",
+    items:["Serrer le frein à main de la caravane","Caler les roues avec les cales","Dételer la caravane de la voiture","Baisser et bloquer les 4 pieds stabilisateurs","Brancher l'eau et l'électricité","Dérouler l'auvent"],
+    order:[0,1,2,3,4,5],
+    indices:["On sécurise d'abord la caravane (frein, cales) AVANT de la séparer de la voiture.","Les 4 pieds stabilisateurs se baissent AVANT de brancher le confort et de dérouler l'auvent."],
+    solution:"Frein → cales → dételer → pieds stabilisateurs → eau/électricité → auvent." },
+
+  { type:"registre", bonus:true, letter:"", art:"registre", lieu:"Le registre des réservations", titre:"Défi bonus · L'enquête",
+    histoire:"Un client arrive, certain d'avoir réservé. La réception ne trouve rien : il s'était trompé d'un mois ! (un autre, légendaire, avait carrément réservé au <b>Yelloh de Fréjus</b>…). <b>Défi bonus</b> : à vous de jouer les réceptionnistes avec le <b>registre imprimé</b> — et de fouiller le casier qui va avec.",
+    riddle:"Monsieur <b>DUBOIS</b> jure qu'il a réservé pour la semaine du <b>12 au 19 juillet</b>. Attention, il y a un piège dans le registre ! Trouvez la bonne ligne à son nom pour CETTE semaine : son <b>numéro d'emplacement à 3 chiffres</b> ouvre la <b>boîte-livre</b>. Ouvrez-la, déchiffrez la carte à l'intérieur (<b>décalez chaque lettre de 3 rangs en arrière</b> dans l'alphabet, D→A), et tapez le mot obtenu.",
+    reponses:[BOOK_WORD],
+    indices:["Deux lignes DUBOIS : écartez celle de juin, gardez le 12-19 juillet → emplacement 308 = code de la boîte-livre.","Sur la carte, décalez de −3 : S→P, R→O, W→T… le mot est ce que Radio Tournels adore colporter."],
+    solution:"Emplacement 308 ouvre la boîte-livre ; la carte « SRWLQV » décalée de −3 donne POTINS." },
+
+  { type:"enigme", letter:"E", art:"femme", lieu:"La femme oubliée au péage", titre:"Il manque quelqu'un…",
+    histoire:"Le pompon : un client fait son départ, prend la route du retour… et ne s'aperçoit qu'<b>au péage d'Aix</b> qu'il a tout bonnement <b>oublié sa femme</b> au camping ! Soit déjà un sacré bout de route. On vous laisse imaginer l'ambiance au moment où il est revenu la chercher. 🙂",
+    f:{ enonce:"Il quitte le camping à <b>9h15</b> et roule <b>1h25</b> avant de réaliser son oubli, au péage. À quelle heure est-il au péage ?",
+        reponses:["10H40","10:40","1040"],
+        indices:["9h15 + 1h00 = 10h15.","10h15 + 25 min = ?"],
+        solution:"9h15 + 1h25 = 10h40." },
+    e:{ enonce:"Départ à <b>9h15</b>, il roule <b>1h25</b> jusqu'au péage, fait demi-tour et met le <b>même temps</b> au retour. À quelle heure récupère-t-il sa femme au camping ?",
+        reponses:["12H05","12:05","1205"],
+        indices:["Au péage : 9h15 + 1h25 = 10h40.","Retour : 10h40 + 1h25 = ?"],
+        solution:"9h15 + 1h25 (aller) + 1h25 (retour) = 12h05." } },
+
+  { type:"cryptex", letter:"L", art:"reservation", lieu:"L'erreur de réservation", titre:"Le bon mot du cryptex",
+    histoire:"Revenons à nos erreurs de réservation. Celle-ci finit mieux : le client s'était trompé d'un mois, sa femme a fondu en larmes (c'étaient leurs seules vacances de l'année)… alors on leur a trouvé un <b>mobil-home de secours</b>. Ouf. Un vieux <b>cryptex</b> de la réception garde encore un secret de cette histoire.",
+    riddle:"Que réserve-t-on pour ses vacances, et sur quoi ce client s'est-il trompé d'un mois ? Trouvez ce mot de <b>6 lettres</b>, composez-le sur le <b>cryptex</b> pour l'ouvrir, puis tapez le <b>code à 4 chiffres</b> caché à l'intérieur (gardez-le pour le coffre final !).",
+    reponses:[TREASURE_CODE],
+    indices:["Le mot de 6 lettres : ce qu'on réserve dans un camping → un S _ _ _ _ R (SÉJOUR).","Composez SEJOUR sur le cryptex, ouvrez-le, et tapez le code à 4 chiffres de la carte."],
+    solution:"Le cryptex s'ouvre sur SEJOUR ; à l'intérieur, le code du coffre final." },
+
+  { type:"labyrinthe", bonus:true, letter:"", art:"tournee", lieu:"La tournée du matin", titre:"Défi bonus · Mini-jeu",
+    histoire:"Dernière mise à l'épreuve avant la signature : la fameuse <b>tournée</b> ! Un vrai saisonnier doit savoir sillonner le camping sans se perdre dans le dédale des allées. <b>Défi bonus</b> : récupérez le <b>courrier</b> 📬 et le <b>linge</b> 🧺, puis filez au <b>mobil-home</b> 🏠 — et attention, le temps et le nombre de trajets sont comptés !",
+    indices:["Explorez méthodiquement : la brume ne dévoile que les allées déjà parcourues.","Récupérez le courrier ET le linge AVANT de rejoindre le mobil-home."],
+    solution:"Rejoignez le mobil-home une fois le courrier et le linge récupérés." },
+
+  { type:"lettres", letter:"S", art:"soleil", lieu:"Le coup de soleil", titre:"Rouges comme des écrevisses",
+    histoire:"On recroise nos Belges en remontant de la plage : <b>rouges comme des écrevisses</b> ! Endormis <b>2 heures</b> en plein soleil, sans parasol et surtout sans ce qu'il fallait s'étaler sur la peau. (L'histoire finit bien : c'est le beau-père qui est venu rechercher voiture et caravane pour la Belgique.)",
+    riddle:"Qu'ont-ils oublié d'appliquer avant de s'endormir au soleil ? Ce mot de <b>5 lettres</b> ouvre le dernier cadenas. Composez-le, ouvrez la boîte, et tapez-le sur l'ordinateur.",
+    reponses:[LETTRES_WORD],
+    indices:["Pour ne pas brûler, on s'enduit de…","Un mot de 5 lettres : C R È _ _ → CREME."],
+    solution:"Le mot est CRÈME : il ouvre le cadenas à lettres." }
+];
+
+/* ---------- ÉTAT ---------- */
+let state = { pseudo:"", mode:"famille", idx:0, remaining:DURATION, timerId:null,
+  letters:[], solved:[], indicesUsed:0, solutionsUsed:0, revealSeq:[], revealStage:0, ordre:null, maze:null, mazeKey:null };
+
+function $(s){return document.querySelector(s);}
+function $$(s){return [...document.querySelectorAll(s)];}
+function norm(s){return (s||"").toString().toUpperCase().replace(/[^A-Z0-9]/g,"");}
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function fmt(s){const m=Math.floor(s/60),x=s%60;return m+":"+(x<10?"0":"")+x;}
+function escapeHtml(s){return (s||"").replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function variant(step){ return (step.f && step.e) ? (state.mode==="expert"?step.e:step.f) : step; }
+function nonBonusCount(){ return STEPS.filter(s=>!s.bonus).length; }
+
+/* ---------- NAVIGATION ---------- */
+function go(name){
+  $$(".screen").forEach(e=>e.classList.remove("on"));
+  const el=$("#s-"+name); if(el) el.classList.add("on");
+  $("#hud").style.display="flex";
+  window.scrollTo&&window.scrollTo(0,0);
+  if(name==="classement") renderLeaderboard();
+}
+function resetToHome(){
+  if(state.timerId){clearInterval(state.timerId);state.timerId=null;}
+  if(state.mazeKey){window.removeEventListener("keydown",state.mazeKey);state.mazeKey=null;}
+  state.remaining=DURATION; $("#timer").textContent=fmt(DURATION); $("#timerPill").classList.remove("urgent");
+  go("accueil");
+}
+function refreshHud(){
+  $("#hintCount").textContent = state.indicesUsed + state.solutionsUsed;
+  const step=STEPS[state.idx];
+  if(step && step.bonus){ $("#stepPill").textContent="✦ Défi bonus"; return; }
+  const pos = STEPS.slice(0,state.idx+1).filter(s=>!s.bonus).length;
+  $("#stepPill").textContent = "Épreuve "+pos+"/"+nonBonusCount();
+}
+
+/* ---------- CHRONO ---------- */
+function startTimer(){
+  state.remaining=DURATION; $("#timer").textContent=fmt(DURATION);
+  if(state.timerId) clearInterval(state.timerId);
+  state.timerId=setInterval(()=>{
+    state.remaining--; $("#timer").textContent=fmt(Math.max(0,state.remaining));
+    if(state.remaining<=300) $("#timerPill").classList.add("urgent");
+    if(state.remaining<=10&&state.remaining>0) Audio2.tick();
+    if(state.remaining<=0){ clearInterval(state.timerId); state.timerId=null; go("timeout"); }
+  },1000);
+}
+
+/* ---------- DÉMARRAGE ---------- */
+$("#modeOpts").addEventListener("click",e=>{
+  const o=e.target.closest(".opt"); if(!o)return;
+  $$(".opt").forEach(x=>x.classList.remove("sel")); o.classList.add("sel"); state.mode=o.dataset.mode;
+});
+$("#startBtn").addEventListener("click",()=>{
+  state.pseudo=($("#pseudo").value||"").trim()||"Équipe mystère";
+  state.idx=0; state.letters=Array(STEPS.length).fill(""); state.solved=Array(STEPS.length).fill(false);
+  state.indicesUsed=0; state.solutionsUsed=0;
+  Audio2.init(); Audio2.startMusic(); startTimer(); renderStep(); go("jeu"); refreshHud();
+});
+
+/* ---------- TAGS / HEADER ---------- */
+function tagFor(t){
+  if(t==="qr") return '<span class="tag qr">📱 QR code</span>';
+  if(t==="cle") return '<span class="tag phys">🔑 Cadenas à clé</span>';
+  if(t==="chiffres") return '<span class="tag phys">🔢 Cadenas chiffres</span>';
+  if(t==="cryptex") return '<span class="tag phys">🔄 Cryptex</span>';
+  if(t==="lettres") return '<span class="tag phys">🔤 Cadenas lettres</span>';
+  if(t==="ordre") return '<span class="tag jeu">🧩 Manipulation</span>';
+  if(t==="morse") return '<span class="tag jeu">📻 Radio Tournels</span>';
+  if(t==="registre") return '<span class="tag qr">📒 Registre</span>';
+  if(t==="labyrinthe") return '<span class="tag jeu">🚲 La tournée</span>';
+  return '<span class="tag">🧠 Énigme</span>';
+}
+function header(step){
+  const eyebrow = step.bonus ? "✦ Défi bonus"
+    : "Épreuve "+ STEPS.slice(0,state.idx+1).filter(s=>!s.bonus).length +" sur "+ nonBonusCount();
+  return `<div class="illus">${artHtml(step.art)}</div>
+    <div class="lieu-head"><div><div class="eyebrow">${eyebrow}</div><h2>${step.lieu}</h2></div>
+      <div style="text-align:right">${tagFor(step.type)}<div class="serif-it" style="font-size:15px;margin-top:6px">${step.titre}</div></div></div>
+    <div class="histoire">${step.histoire}</div>`;
+}
+function answerRow(ph){
+  return `<div class="ans-row"><input type="text" id="ansInput" placeholder="${ph||"votre réponse"}" autocomplete="off"><button class="btn btn-go" id="validBtn">Valider</button></div><p class="feedback" id="fb"></p>`;
+}
+
+/* ---------- INDICES ---------- */
+function indicesBlock(v){
+  const exp=state.mode==="expert", seq=[];
+  if(v.indices&&v.indices[0]) seq.push({type:"ind",n:0});
+  if(!exp&&v.indices&&v.indices[1]) seq.push({type:"ind",n:1});
+  if(!exp&&v.solution) seq.push({type:"sol"});
+  state.revealSeq=seq; state.revealStage=0;
+  if(!seq.length) return "";
+  return `<div class="indices"><div class="lbl">Besoin d'un coup de pouce ?</div>
+    <div><button class="btn btn-ghost" id="hintBtn">${nextHintLabel()}</button></div><div id="revealed"></div></div>`;
+}
+function nextHintLabel(){
+  const sc=SCORING[state.mode], s=state.revealSeq[state.revealStage]; if(!s) return "";
+  return s.type==="sol" ? `🔓 Voir la solution (−${sc.solution} pts)` : `💡 Indice ${s.n+1} (−${sc.indice} pts)`;
+}
+function revealNext(){
+  const s=state.revealSeq[state.revealStage]; if(!s) return;
+  const v=variant(STEPS[state.idx]);
+  if(s.type==="ind"){ state.indicesUsed++;
+    $("#revealed").insertAdjacentHTML("beforeend",`<div class="reveal-box"><span class="t">Indice ${s.n+1}</span>${v.indices[s.n]}</div>`);
+  } else { state.solutionsUsed++;
+    $("#revealed").insertAdjacentHTML("beforeend",`<div class="reveal-box sol"><span class="t">Solution</span>${v.solution}</div>`);
+  }
+  refreshHud(); state.revealStage++;
+  const b=$("#hintBtn"); if(!b) return;
+  if(state.revealStage>=state.revealSeq.length){ b.disabled=true;
+    b.textContent = state.mode==="expert" ? "Plus d'aide en mode Expert" : "Plus d'aide disponible";
+  } else b.textContent = nextHintLabel();
+}
+
+/* ---------- RENDU D'UNE ÉTAPE ---------- */
+function renderStep(){
+  const step=STEPS[state.idx]; let body="";
+  if(step.type==="enigme"){ const v=variant(step); body=`<p class="enonce">${v.enonce}</p>${answerRow()}${indicesBlock(v)}`; }
+  else if(step.type==="cle"){ body=`<p class="enonce">${step.riddle}</p>${answerRow("le mot de la carte")}${indicesBlock(step)}`; }
+  else if(step.type==="chiffres"){ body=`<p class="enonce">${step.riddle}</p>${answerRow("le mot de la carte")}${indicesBlock(step)}`; }
+  else if(step.type==="qr"){ body=`<div class="obj-hint"><span class="ic">📱</span><div>Trouvez le <b>QR code</b> caché près des douches et scannez-le : il contient une charade.</div></div><p class="enonce">Quel mot la charade donne-t-elle ?</p>${answerRow("le mot trouvé")}${indicesBlock(step)}`; }
+  else if(step.type==="cryptex"){ body=`<p class="enonce">${step.riddle}</p>${answerRow("le code à 4 chiffres")}${indicesBlock(step)}`; }
+  else if(step.type==="lettres"){ body=`<p class="enonce">${step.riddle}</p>${answerRow("le mot de 5 lettres")}${indicesBlock(step)}`; }
+  else if(step.type==="registre"){ body=`<div class="obj-hint"><span class="ic">📒</span><div>Prenez le <b>registre des réservations</b> imprimé remis par l'animateur.</div></div><p class="enonce">${step.riddle}</p>${answerRow("le n° d'emplacement")}${indicesBlock(step)}`; }
+  else if(step.type==="morse"){ body=`<div class="obj-hint"><span class="ic">📻</span><div>Écoutez le <b>message morse</b> et déchiffrez-le avec la <b>grille morse</b> imprimée.</div></div>
+      <div class="row" style="margin:8px 0"><button class="btn btn-or" id="morseBtn">▶︎ Jouer le message</button><button class="btn btn-ghost" id="morseReplay">↻ Rejouer</button></div>
+      <p class="enonce">Quel mot le message épelle-t-il ?</p>${answerRow("le mot décodé")}${indicesBlock(step)}`; }
+  else if(step.type==="ordre"){ body=renderOrdreBody(step)+indicesBlock(step); }
+  else if(step.type==="labyrinthe"){ body=renderMazeBody()+indicesBlock(step); }
+
+  $("#stepCard").innerHTML = header(step)+body+`<div id="afterZone"></div>`;
+
+  if(step.type==="ordre"){ wireOrdre(); }
+  else if(step.type==="labyrinthe"){ wireMaze(); }
+  else {
+    if(step.type==="morse"){ const p=()=>Audio2.playMorse(step.word); $("#morseBtn")&&$("#morseBtn").addEventListener("click",p); $("#morseReplay")&&$("#morseReplay").addEventListener("click",p); }
+    const input=$("#ansInput");
+    if(input){ input.addEventListener("keydown",ev=>{if(ev.key==="Enter")checkAnswer();}); setTimeout(()=>input.focus(),60); }
+    $("#validBtn")&&$("#validBtn").addEventListener("click",checkAnswer);
+  }
+  $("#hintBtn")&&$("#hintBtn").addEventListener("click",revealNext);
+}
+
+/* ---------- ÉPREUVE ORDRE ---------- */
+function renderOrdreBody(step){
+  state.ordre={picked:[]};
+  const shuffled=shuffle(step.items.map((t,i)=>({t,i})));
+  const rows=shuffled.map(o=>`<div class="ordre-item" data-i="${o.i}"><span class="num">?</span><span>${o.t}</span></div>`).join("");
+  return `<p class="enonce">Cliquez les étapes <b>dans le bon ordre</b> (de la première à la dernière) :</p>
+    <div class="ordre-zone" id="ordreZone">${rows}</div>
+    <div class="row"><button class="btn btn-ghost" id="ordreReset">↺ Recommencer</button><button class="btn btn-go" id="ordreValid">Valider l'ordre</button></div>
+    <p class="feedback" id="fb"></p>`;
+}
+function wireOrdre(){
+  const step=STEPS[state.idx];
+  $("#ordreZone").addEventListener("click",e=>{
+    const it=e.target.closest(".ordre-item"); if(!it||it.classList.contains("picked"))return;
+    const i=+it.dataset.i; state.ordre.picked.push(i);
+    it.classList.add("picked"); it.querySelector(".num").textContent=state.ordre.picked.length; Audio2.tick();
+  });
+  $("#ordreReset").addEventListener("click",()=>renderStep());
+  $("#ordreValid").addEventListener("click",()=>{
+    const p=state.ordre.picked, fb=$("#fb");
+    if(p.length<step.items.length){ fb.className="feedback no"; fb.textContent="Classez bien toutes les étapes."; return; }
+    if(p.every((v,k)=>v===step.order[k])) awardLetter();
+    else { Audio2.bad(); fb.className="feedback no"; fb.textContent="Ce n'est pas le bon ordre… recommencez !"; }
+  });
+}
+
+/* ---------- LABYRINTHE (la tournée) ---------- */
+function genMaze(W,H){
+  const g=Array.from({length:H},()=>Array(W).fill(1));
+  (function carve(x,y){ g[y][x]=0;
+    for(const [dx,dy] of shuffle([[0,-2],[0,2],[-2,0],[2,0]])){
+      const nx=x+dx, ny=y+dy;
+      if(nx>0&&nx<W-1&&ny>0&&ny<H-1&&g[ny][nx]===1){ g[y+dy/2][x+dx/2]=0; carve(nx,ny); }
+    } })(1,1);
+  return g;
+}
+function mazeRandCell(g,W,H,taken){
+  for(let t=0;t<400;t++){
+    const x=1+2*Math.floor(Math.random()*((W-1)/2)), y=1+2*Math.floor(Math.random()*((H-1)/2)), k=x+","+y;
+    if(g[y][x]===0&&!(x===1&&y===1)&&!(x===W-2&&y===H-2)&&!taken.has(k)){ taken.add(k); return {x,y}; }
+  } return {x:W-2,y:1};
+}
+function mazeDist(g,W,H,a,b){
+  const seen=Array.from({length:H},()=>Array(W).fill(false)); seen[a.y][a.x]=true;
+  let q=[[a.x,a.y,0]],h=0;
+  while(h<q.length){ const [x,y,d]=q[h++]; if(x===b.x&&y===b.y) return d;
+    for(const [dx,dy] of [[0,-1],[0,1],[-1,0],[1,0]]){ const nx=x+dx,ny=y+dy;
+      if(nx>=0&&ny>=0&&nx<W&&ny<H&&g[ny][nx]===0&&!seen[ny][nx]){ seen[ny][nx]=true; q.push([nx,ny,d+1]); } } }
+  return Infinity;
+}
+function mazeOptimal(g,W,H,s,a,b,goal){
+  const d=(p,q)=>mazeDist(g,W,H,p,q);
+  return Math.min(d(s,a)+d(a,b)+d(b,goal), d(s,b)+d(b,a)+d(a,goal));
+}
+function newMaze(){
+  const exp=state.mode==="expert";
+  const W=exp?19:15, H=exp?13:11, R=exp?1:2;
+  const g=genMaze(W,H), taken=new Set();
+  const i0=mazeRandCell(g,W,H,taken), i1=mazeRandCell(g,W,H,taken);
+  const opt=mazeOptimal(g,W,H,{x:1,y:1},i0,i1,{x:W-2,y:H-2});
+  const limit=Math.max(opt+8, Math.round(opt*MAZE_BUDGET[exp?"expert":"famille"]));
+  const resets=state.maze?(state.maze.resets||0):0;
+  state.maze={ g,W,H,x:1,y:1,gx:W-2,gy:H-2,won:false,dead:false,moves:0,R,opt,limit,resets,
+    i0,i1,has0:false,has1:false,seen:new Set([(W-2)+","+(H-2)]) };
+  window.__maze=state.maze;
+  const grid=$("#maze"); if(!grid) return;
+  grid.style.gridTemplateColumns=`repeat(${W},1fr)`;
+  let cells=""; for(let y=0;y<H;y++)for(let x=0;x<W;x++) cells+=`<div class="mcell fog" data-x="${x}" data-y="${y}"></div>`;
+  grid.innerHTML=cells; paintMaze(); mazeStatus();
+}
+function renderMazeBody(){
+  return `<div class="maze-wrap"><div class="maze" id="maze"></div></div>
+    <div class="dpad"><button class="btn btn-ghost dbtn" data-dir="up">▲</button>
+      <div class="dpad-mid"><button class="btn btn-ghost dbtn" data-dir="left">◀</button><button class="btn btn-ghost dbtn" data-dir="down">▼</button><button class="btn btn-ghost dbtn" data-dir="right">▶</button></div></div>
+    <p class="step-note" id="mazeStatus" style="text-align:center;margin-top:4px"></p>`;
+}
+function mazeReveal(){ const m=state.maze;
+  for(let dy=-m.R;dy<=m.R;dy++)for(let dx=-m.R;dx<=m.R;dx++){ const x=m.x+dx,y=m.y+dy; if(x>=0&&y>=0&&x<m.W&&y<m.H) m.seen.add(x+","+y); } }
+function paintMaze(){ const m=state.maze; if(!m)return; mazeReveal();
+  $$("#maze .mcell").forEach(c=>{ const x=+c.dataset.x,y=+c.dataset.y,seen=m.seen.has(x+","+y); let cls="mcell";
+    if(!seen){ c.className="mcell fog"; return; }
+    if(m.g[y][x]===1) cls+=" wall";
+    if(x===m.x&&y===m.y) cls+=" boat";
+    else if(x===m.gx&&y===m.gy) cls+=" goal";
+    else if(!m.has0&&x===m.i0.x&&y===m.i0.y) cls+=" i0";
+    else if(!m.has1&&x===m.i1.x&&y===m.i1.y) cls+=" i1";
+    c.className=cls; });
+}
+function mazeStatus(){ const m=state.maze; const left=m.limit-m.moves;
+  const warn=left<=4?'color:var(--soleil-clair);font-weight:700':(left<=10?'color:#ffd680':'');
+  $("#mazeStatus").innerHTML=`📬 ${m.has0?"✓":"✗"} &nbsp; 🧺 ${m.has1?"✓":"✗"} &nbsp;·&nbsp; <span style="${warn}">Trajets : ${m.moves} / ${m.limit}</span>`;
+}
+function mazeReset(){ const m=state.maze; m.dead=true; m.resets=(m.resets||0)+1;
+  $("#mazeStatus").innerHTML=`🌀 Trop de détours ! Vous vous êtes perdu… <b>nouvelle tournée</b> (essai ${m.resets+1}).`; Audio2.bad();
+  setTimeout(()=>{ if($("#maze")) newMaze(); },1200);
+}
+function mazeMove(dir){ const m=state.maze; if(!m||m.won||m.dead)return;
+  const d={up:[0,-1],down:[0,1],left:[-1,0],right:[1,0]}[dir]; if(!d)return;
+  const nx=m.x+d[0], ny=m.y+d[1];
+  if(nx<0||ny<0||nx>=m.W||ny>=m.H||m.g[ny][nx]===1){ Audio2.bad(); return; }
+  m.x=nx; m.y=ny; m.moves++;
+  if(!m.has0&&nx===m.i0.x&&ny===m.i0.y){ m.has0=true; Audio2.good(); }
+  if(!m.has1&&nx===m.i1.x&&ny===m.i1.y){ m.has1=true; Audio2.good(); }
+  Audio2.tick(); paintMaze(); mazeStatus();
+  if(m.x===m.gx&&m.y===m.gy&&m.has0&&m.has1){ m.won=true; Audio2.good();
+    finishBonus(`<div class="letter-won"><div class="eyebrow">Tournée réussie</div><div class="big" style="font-size:42px">🚲 ✓</div><p class="serif-it">Livré dans les temps ! Vous ferez un bon saisonnier.</p></div>`); return; }
+  if(m.x===m.gx&&m.y===m.gy){ $("#mazeStatus").innerHTML=`⚠️ Récupérez d'abord 📬 et 🧺 avant le mobil-home ! &nbsp;·&nbsp; Trajets : ${m.moves}/${m.limit}`; Audio2.bad(); }
+  if(m.moves>=m.limit&&!m.won) mazeReset();
+}
+function wireMaze(){
+  newMaze();
+  $$("#stepCard .dbtn").forEach(b=>b.addEventListener("click",()=>mazeMove(b.dataset.dir)));
+  state.mazeKey=ev=>{ if(!$("#maze"))return; const k={ArrowUp:"up",ArrowDown:"down",ArrowLeft:"left",ArrowRight:"right"}[ev.key]; if(k){ ev.preventDefault(); mazeMove(k); } };
+  window.addEventListener("keydown",state.mazeKey);
+}
+
+/* ---------- VÉRIFICATION ---------- */
+function checkAnswer(){
+  const v=variant(STEPS[state.idx]); const inp=$("#ansInput"); if(!inp)return;
+  const val=norm(inp.value), fb=$("#fb"); if(!val) return;
+  if(v.reponses.map(norm).includes(val)) awardLetter();
+  else { Audio2.bad(); fb.className="feedback no"; fb.textContent="Pas tout à fait… réessayez ou prenez un indice."; inp.select&&inp.select(); }
+}
+
+/* ---------- VALIDATION (lettre ou bonus) ---------- */
+function advanceAfter(wonBox){
+  const last=state.idx===STEPS.length-1;
+  $("#afterZone").innerHTML = wonBox + `<div class="nav-row"><span></span><button class="btn btn-or" id="nextBtn">${last?"Reconstituer le mot →":"Épreuve suivante →"}</button></div>`;
+  $("#nextBtn").addEventListener("click",()=>{ if(last){ prepFinale(); go("finale"); } else { state.idx++; renderStep(); go("jeu"); refreshHud(); } });
+}
+function awardLetter(){
+  if(state.solved[state.idx])return;
+  const step=STEPS[state.idx];
+  state.solved[state.idx]=true; if(step.letter) state.letters[state.idx]=step.letter; refreshHud(); Audio2.good();
+  const box = step.letter
+    ? `<div class="letter-won"><div class="eyebrow">Lettre obtenue</div><div class="big">${step.letter}</div><p class="serif-it">✍️ Notez vite cette lettre — elle ne réapparaîtra pas !</p></div>`
+    : `<div class="letter-won"><div class="eyebrow">Défi bonus réussi</div><div class="big" style="font-size:42px">✓</div><p class="serif-it">Bien joué ! Pas de lettre, mais le respect de la Radio Tournels.</p></div>`;
+  advanceAfter(box);
+}
+function finishBonus(wonBox){
+  if(state.solved[state.idx])return;
+  if(state.mazeKey){ window.removeEventListener("keydown",state.mazeKey); state.mazeKey=null; }
+  state.solved[state.idx]=true; Audio2.good();
+  advanceAfter(wonBox);
+}
+
+/* ---------- FINALE ---------- */
+function prepFinale(){
+  $("#finaleIllus").innerHTML=artHtml("tournels");
+  const fi=$("#finalInput"); fi.value=""; fi.disabled=false; $("#finalBtn").disabled=false; $("#finalFeedback").textContent="";
+  fi.maxLength=SECRET.length; fi.onkeydown=ev=>{if(ev.key==="Enter")checkFinal();}; $("#finalBtn").onclick=checkFinal;
+  setTimeout(()=>fi.focus(),80);
+}
+function checkFinal(){
+  const fb=$("#finalFeedback");
+  if(norm($("#finalInput").value)===norm(SECRET)){ if(state.timerId){clearInterval(state.timerId);state.timerId=null;} Audio2.win(); launchConfetti(); showResult(); }
+  else { Audio2.bad(); fb.className="feedback no"; fb.textContent="Ce n'est pas le bon mot… repensez à vos 8 lettres."; }
+}
+
+/* ---------- RÉSULTAT ---------- */
+function computeScore(elapsed){ const s=SCORING[state.mode];
+  return Math.max(0, s.base - Math.round(elapsed*s.perSec) - state.indicesUsed*s.indice - state.solutionsUsed*s.solution); }
+function showResult(){
+  const elapsed=DURATION-state.remaining, score=computeScore(elapsed);
+  $("#resTime").textContent=fmt(elapsed); $("#resScore").textContent=score;
+  if($("#treasureNote")) $("#treasureNote").style.display="block";
+  const s=SCORING[state.mode];
+  $("#scoreBreak").textContent=`Calcul : ${s.base} (base) − ${Math.round(elapsed*s.perSec)} (temps) − ${state.indicesUsed*s.indice+state.solutionsUsed*s.solution} (indices) = ${score}`;
+  const entry={name:state.pseudo,mode:state.mode,time:elapsed,hints:state.indicesUsed+state.solutionsUsed,score,date:Date.now()};
+  $("#rankBanner").innerHTML="";
+  saveScore(entry).then(rank=>{ $("#rankBanner").innerHTML = rank ? `Vous êtes <b>${rank}${rank===1?"ᵉʳ":"ᵉ"}</b> au classement ${state.mode==="expert"?"Expert":"Famille"} !` : ""; });
+  go("resultat");
+}
+
+/* ---------- CLASSEMENT ---------- */
+const LB_KEY="tournels_lb_v1";
+function loadLBlocal(){ try{return JSON.parse(localStorage.getItem(LB_KEY))||[];}catch(e){return [];} }
+function writeLBlocal(a){ try{localStorage.setItem(LB_KEY,JSON.stringify(a));}catch(e){} }
+if(!window.LB){ window.LB={ online:false,
+  submit(e){const a=loadLBlocal();a.push(e);writeLBlocal(a);return Promise.resolve();},
+  top(){return Promise.resolve(loadLBlocal());}, reset(){writeLBlocal([]);return Promise.resolve();} }; }
+let lbFilter="tous";
+$("#lbTabs").addEventListener("click",e=>{const t=e.target.closest(".tab");if(!t)return;
+  $$("#lbTabs .tab").forEach(x=>x.classList.remove("sel"));t.classList.add("sel");lbFilter=t.dataset.f;renderLeaderboard();});
+async function saveScore(entry){
+  try{ await window.LB.submit(entry); }catch(e){}
+  try{ const all=await window.LB.top();
+    return all.filter(x=>x.mode===entry.mode).sort((a,b)=>b.score-a.score||a.time-b.time).findIndex(x=>x.date===entry.date&&x.name===entry.name&&x.score===entry.score)+1;
+  }catch(e){ return 0; }
+}
+async function renderLeaderboard(){
+  const body=$("#lbBody"), st=$("#lbStatus");
+  if(st) st.textContent = window.LB.online ? "🌐 Classement partagé en ligne." : "📱 Classement local (cet appareil).";
+  body.innerHTML=`<div class="empty">Chargement…</div>`;
+  let rows; try{ rows=await window.LB.top(); }catch(e){ body.innerHTML=`<div class="empty">Classement indisponible.</div>`; return; }
+  if(lbFilter!=="tous") rows=rows.filter(r=>r.mode===lbFilter);
+  rows.sort((a,b)=>b.score-a.score||a.time-b.time); rows=rows.slice(0,15);
+  if(!rows.length){ body.innerHTML=`<div class="empty">Aucun score pour l'instant. À vous d'inaugurer le tableau ! 🏆</div>`; return; }
+  const med=["🥇","🥈","🥉"];
+  body.innerHTML=`<table><thead><tr><th>#</th><th>Équipe</th><th>Niv.</th><th>Temps</th><th>Indices</th><th>Score</th></tr></thead><tbody>`+
+    rows.map((r,i)=>`<tr><td class="medal">${med[i]||(i+1)}</td><td>${escapeHtml(r.name)}</td><td>${r.mode==="expert"?"🧭":"👪"}</td><td class="mono">${fmt(r.time)}</td><td class="mono">${r.hints}</td><td class="mono"><b style="color:var(--tente)">${r.score}</b></td></tr>`).join("")+`</tbody></table>`;
+}
+async function clearLeaderboard(){
+  const msg=window.LB.online?"Réinitialiser TOUT le classement en ligne (tous les appareils) ?":"Effacer le classement de cet appareil ?";
+  if(!confirm(msg))return;
+  try{ await window.LB.reset(); }catch(e){ alert("Échec : "+(e.message||e)); return; }
+  renderLeaderboard();
+}
+window.addEventListener("lb-ready",()=>{ if($("#s-classement").classList.contains("on")) renderLeaderboard(); });
+
+/* ---------- ESPACE ANIMATEUR ---------- */
+$("#gmEnter").addEventListener("click",unlockGm);
+$("#gmPass").addEventListener("keydown",e=>{if(e.key==="Enter")unlockGm();});
+function unlockGm(){
+  const fb=$("#gmFb");
+  if(norm($("#gmPass").value)===norm(GM_PASSWORD)){
+    $("#gmWord").textContent=SECRET;
+    $("#gmCle").textContent=CLE_INSIDE; $("#gmCle2").textContent=CLE_INSIDE;
+    $("#gmChiffres").textContent=CHIFFRES_CODE; $("#gmChiffres2").textContent=CHIFFRES_CODE;
+    $("#gmFrites").textContent=CHIFFRES_INSIDE; $("#gmFrites2").textContent=CHIFFRES_INSIDE;
+    $("#gmQRtext").textContent=QR_ENIGME+" (Réponse : "+QR_ANSWER+")";
+    $("#gmMorse").textContent=MORSE_WORD;
+    $("#gmRegAns").textContent=REGISTRE_ANS;
+    $("#gmBookCipher").textContent=BOOK_CIPHER; $("#gmBookCipher2").textContent=BOOK_CIPHER;
+    $("#gmBookWord").textContent=BOOK_WORD; $("#gmBook2").textContent=REGISTRE_ANS;
+    $("#gmCryptex").textContent=CRYPTEX_WORD; $("#gmCryptex2").textContent=CRYPTEX_WORD;
+    $("#gmTreasure").textContent=TREASURE_CODE; $("#gmTreasure2").textContent=TREASURE_CODE; $("#gmTreasure3").textContent=TREASURE_CODE;
+    $("#gmLettres").textContent=LETTRES_WORD; $("#gmLettres2").textContent=LETTRES_WORD;
+    const lbl={enigme:"Énigme",cle:"Cadenas clé",chiffres:"Cadenas 4 chiffres",qr:"QR code",ordre:"Manipulation",cryptex:"Cryptex",lettres:"Cadenas 5 lettres",morse:"Bonus · Morse",registre:"Bonus · Registre",labyrinthe:"Bonus · Labyrinthe"};
+    $("#gmRows").innerHTML=STEPS.map(st=>{
+      let rep;
+      if(st.f&&st.e) rep=`F: ${st.f.reponses[0]} / E: ${st.e.reponses[0]}`;
+      else if(st.type==="ordre") rep="Frein→cales→dételer→pieds→eau→auvent";
+      else if(st.type==="labyrinthe") rep="Récupérer 📬+🧺 puis 🏠";
+      else if(st.type==="cryptex") rep=`cryptex ${CRYPTEX_WORD} → ${st.reponses[0]}`;
+      else if(st.type==="lettres") rep=`cadenas ${LETTRES_WORD} → ${st.reponses[0]}`;
+      else if(st.type==="cle") rep=`la bonne clé → ${st.reponses[0]}`;
+      else if(st.type==="chiffres") rep=`${CHIFFRES_CODE} → ${st.reponses[0]}`;
+      else if(st.type==="morse") rep=`morse → ${st.reponses[0]}`;
+      else if(st.type==="registre") rep=`registre → ${REGISTRE_ANS} → boîte-livre → ${st.reponses[0]}`;
+      else rep=st.reponses[0];
+      return `<tr><td>${st.lieu}</td><td>${lbl[st.type]}</td><td class="gm-code">${rep}</td><td class="gm-code">${st.letter||"—"}</td></tr>`;
+    }).join("");
+    $("#gmGate").style.display="none"; $("#gmContent").style.display="block";
+  } else { fb.className="feedback no"; fb.textContent="Mot de passe incorrect."; }
+}
+
+/* ---------- AUDIO ---------- */
+const Audio2={ ctx:null,master:null,morseGain:null,muted:false,started:false,music:null,
+  startMusic(){ if(!MEDIA.musique) return; try{ this.music=new Audio(MEDIA.musique); this.music.loop=true;
+    this.music.volume=this.muted?0:0.4; this.music.addEventListener("error",()=>{this.music=null;}); this.music.play().catch(()=>{}); }catch(e){} },
+  MORSE:{A:".-",B:"-...",C:"-.-.",D:"-..",E:".",F:"..-.",G:"--.",H:"....",I:"..",J:".---",K:"-.-",L:".-..",M:"--",N:"-.",O:"---",P:".--.",Q:"--.-",R:".-.",S:"...",T:"-",U:"..-",V:"...-",W:".--",X:"-..-",Y:"-.--",Z:"--.."},
+  init(){ if(this.started)return; this.started=true;
+    try{ const C=window.AudioContext||window.webkitAudioContext; if(!C)return;
+      this.ctx=new C(); this.master=this.ctx.createGain(); this.master.gain.value=this.muted?0:0.5; this.master.connect(this.ctx.destination);
+      this.morseGain=this.ctx.createGain(); this.morseGain.gain.value=0.32; this.morseGain.connect(this.ctx.destination);
+    }catch(e){} },
+  _tone(f,d,type,g,delay){ if(!this.ctx)return; const t=this.ctx.currentTime+(delay||0);
+    const o=this.ctx.createOscillator(),ga=this.ctx.createGain(); o.type=type||"sine"; o.frequency.value=f;
+    ga.gain.setValueAtTime(0.0001,t); ga.gain.linearRampToValueAtTime(g||0.2,t+0.02); ga.gain.exponentialRampToValueAtTime(0.0001,t+d);
+    o.connect(ga); ga.connect(this.master); o.start(t); o.stop(t+d+0.02); },
+  good(){ this._tone(660,0.18,"sine",0.22); this._tone(880,0.22,"sine",0.18,0.09); },
+  bad(){ this._tone(200,0.26,"sine",0.22); },
+  tick(){ this._tone(440,0.05,"sine",0.12); },
+  win(){ [523,659,784,1047,1319].forEach((f,i)=>this._tone(f,0.3,"triangle",0.16,i*0.13)); },
+  playMorse(text){ if(!this.ctx) this.init(); if(!this.ctx) return; try{this.ctx.resume();}catch(e){}
+    const u=0.12, dot=u, dash=u*3, gIntra=u, gLetter=u*8, gWord=u*13, freq=620;
+    let t=this.ctx.currentTime+0.15;
+    const beep=dur=>{ const o=this.ctx.createOscillator(),g=this.ctx.createGain(); o.type="sine"; o.frequency.value=freq;
+      g.gain.setValueAtTime(0.0001,t); g.gain.linearRampToValueAtTime(0.5,t+0.008); g.gain.setValueAtTime(0.5,t+dur-0.008); g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+      o.connect(g); g.connect(this.morseGain||this.ctx.destination); o.start(t); o.stop(t+dur+0.02); t+=dur; };
+    for(const ch of (text||"").toUpperCase()){ if(ch===" "){ t+=gWord; continue; }
+      const code=this.MORSE[ch]; if(!code){ t+=gLetter; continue; }
+      code.split("").forEach((sym,i)=>{ beep(sym==="."?dot:dash); if(i<code.length-1) t+=gIntra; }); t+=gLetter; } },
+  toggle(){ this.muted=!this.muted; if(this.master)this.master.gain.value=this.muted?0:0.5; if(this.music)this.music.volume=this.muted?0:0.4; return this.muted; }
+};
+function toggleMute(){ const m=Audio2.toggle(); $("#muteBtn").textContent=m?"🔇":"🔊"; }
+
+/* ---------- CONFETTIS ---------- */
+function launchConfetti(){
+  const c=$("#confetti"); c.classList.add("on"); c.innerHTML="";
+  const cols=["#f6b53c","#e8663f","#4bab5c","#1b8fd1","#fff"];
+  for(let i=0;i<70;i++){ const s=document.createElement("div"); s.className="cf";
+    s.style.left=Math.random()*100+"%"; s.style.background=cols[i%cols.length];
+    s.style.animationDuration=(2.4+Math.random()*2)+"s"; s.style.animationDelay=(Math.random()*0.6)+"s";
+    s.style.transform="rotate("+Math.random()*360+"deg)"; c.appendChild(s); }
+  setTimeout(()=>c.classList.remove("on"),4200);
+}
+
+/* ---------- INIT ---------- */
+$("#heroIllus").innerHTML=artHtml("hero");
+</script>
+
+<script type="module">
+(async () => {
+  const cfg = window.FIREBASE; if (!cfg || !cfg.apiKey) return;
+  try {
+    const appMod = await import("https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js");
+    const fs     = await import("https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js");
+    const app = appMod.initializeApp(cfg); const db = fs.getFirestore(app); const CN = cfg.collection || "classement_panique_tournels";
+    window.LB = { online:true,
+      async submit(e){ await fs.addDoc(fs.collection(db,CN), e); },
+      async top(){ const snap=await fs.getDocs(fs.query(fs.collection(db,CN),fs.orderBy("score","desc"),fs.limit(300))); return snap.docs.map(d=>({id:d.id,...d.data()})); },
+      async reset(){ const snap=await fs.getDocs(fs.collection(db,CN)); await Promise.all(snap.docs.map(d=>fs.deleteDoc(fs.doc(db,CN,d.id)))); } };
+    window.dispatchEvent(new Event("lb-ready"));
+  } catch(err){ console.warn("Firebase indisponible, classement local :",err); }
+})();
+</script>
+</body>
+</html>
